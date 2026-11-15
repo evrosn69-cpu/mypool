@@ -15,7 +15,7 @@ A pool chemistry tracker that installs on your phone's home screen. It is free, 
 ## Put it online with GitHub Pages (free)
 
 1. On github.com create a new **public** repository, for example `mypool`.
-2. Upload every file from this folder (`index.html`, `manifest.webmanifest`, `sw.js`, the `icons` folder). Keep the folder structure.
+2. Upload every file from this folder (`index.html`, `manifest.webmanifest`, `sw.js` and the three `icon-...png` files). There are no folders.
 3. In the repository open **Settings > Pages**. Under "Build and deployment" choose **Deploy from a branch**, branch **main**, folder **/ (root)**, then Save.
 4. After a minute the app is at `https://YOUR-USERNAME.github.io/mypool/`.
 
