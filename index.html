@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Pool</title>
+<meta name="theme-color" content="#0B6E8A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="My Pool">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#F2F7F9;color:#0E2A38;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:15px}
+button,input,select{font-family:inherit;color:inherit}
+button{cursor:pointer}
+#app{max-width:480px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;min-height:100vh}
+h1{margin:0;font-size:28px;font-weight:700;letter-spacing:-.01em}
+h2{margin:4px 0 0;font-size:13px;font-weight:600;color:#456170}
+.sub{font-size:13px;color:#456170}
+.sm{font-size:12px;color:#456170}
+.b{font-weight:600}
+.card{background:#fff;border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.card.sel{border:2px solid #0B6E8A;padding:12px 14px}
+.card.np{padding:0;overflow:hidden;gap:0}
+.card.warn{background:#FFF3E8;border:1px solid #F3C79C}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.col{display:flex;flex-direction:column;gap:2px;min-width:0}
+.grow{flex:1;min-width:0}
+.list{background:#fff;border-radius:16px;padding:2px 16px;display:flex;flex-direction:column}
+.list>*{min-height:54px;border-bottom:1px solid #E3ECF0;padding:6px 0}
+.list>*:last-child{border-bottom:0}
+.btn{min-height:44px;padding:0 16px;border:0;border-radius:12px;background:#0B6E8A;color:#fff;font-size:15px;font-weight:600}
+.btn.o{background:transparent;border:1px solid #0B6E8A;color:#0B6E8A}
+.btn.w{background:#fff;color:#0E2A38}
+.btn.big{min-height:52px;font-size:16px}
+.btn.x{min-height:44px;min-width:44px;padding:0;background:transparent;color:#456170;font-size:20px}
+.lnk{align-self:flex-start;min-height:44px;padding:0;border:0;background:transparent;color:#0B6E8A;font-size:14px;font-weight:600}
+.ico{width:44px;height:44px;border:0;border-radius:12px;background:#DCE8ED;display:flex;align-items:center;justify-content:center}
+.seg{display:flex;background:#DCE8ED;border-radius:12px;padding:4px;gap:4px}
+.seg button{flex:1;min-height:40px;border:0;border-radius:9px;background:transparent;color:#33505E;font-size:14px;font-weight:500;padding:0 6px}
+.seg button[aria-pressed=true]{background:#fff;color:#0E2A38;font-weight:600}
+.seg.s{border-radius:10px;padding:3px;gap:2px}
+.seg.s button{min-height:38px;font-size:12px;flex:0 0 auto;min-width:48px}
+.chip{font-size:12px;font-weight:600;border-radius:8px;padding:4px 8px;white-space:nowrap;color:#084F64;background:#D6ECF3}
+.chip.warn{color:#8A3B00;background:#FFE4CC}
+.in{width:100%;height:44px;border:1px solid #B9CCD5;border-radius:10px;padding:0 10px;font-size:16px;font-weight:600;background:#fff;min-width:0}
+.in.r{text-align:right}
+.in.big{height:48px;font-size:22px;font-weight:700;width:104px}
+select.in{font-weight:500;padding-right:4px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:#456170;flex:1;min-width:0}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{border:0;text-align:left;gap:8px;padding:14px}
+.big{font-size:30px;font-weight:700;letter-spacing:-.02em}
+.g{position:relative;display:flex;height:10px;gap:2px;margin:5px 0}
+.g i{display:block;height:10px}
+.g i.w{background:#F3C79C}.g i.k{background:#0B6E8A}
+.g i:first-child{border-radius:5px 0 0 5px}.g i:nth-child(3){border-radius:0 5px 5px 0}
+.g b{position:absolute;top:-5px;width:10px;height:20px;margin-left:-5px;background:#0E2A38;border:2px solid #fff;border-radius:5px}
+.bar{height:8px;border-radius:4px;background:#DCE8ED;overflow:hidden}
+.bar i{display:block;height:8px;border-radius:4px;background:#0B6E8A}
+.bar i.low{background:#B4500A}
+.sw{display:flex;gap:4px}
+.sw button{flex:1;border:0;background:transparent;padding:0;display:flex;flex-direction:column;align-items:center;gap:4px;color:#456170;font-size:12px;font-weight:500;min-height:52px}
+.sw button span{display:block;width:100%;height:32px;border-radius:8px}
+.sw button[aria-pressed=true]{color:#0E2A38;font-weight:700}
+.sw button[aria-pressed=true] span{border:2px solid #fff;outline:3px solid #0E2A38}
+.wk{display:flex;justify-content:space-between}
+.wk div{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:#456170}
+.wk span{width:36px;height:36px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;color:#0E2A38}
+.wk span.c{background:#0B6E8A;color:#fff;font-weight:700}
+.wk span.e{background:#FFE4CC;color:#8A3B00}
+.sw-t{position:relative;width:52px;height:44px;flex:none;border:0;background:transparent;padding:0}
+.sw-t i{display:block;width:52px;height:30px;border-radius:15px;background:#8FA5AF;position:relative}
+.sw-t i:after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:12px;background:#fff;transition:left .15s}
+.sw-t[aria-checked=true] i{background:#0B6E8A}
+.sw-t[aria-checked=true] i:after{left:25px}
+ol.st{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;counter-reset:s}
+ol.st li{display:flex;gap:10px;font-size:14px;align-items:flex-start;counter-increment:s}
+ol.st li:before{content:counter(s);flex:none;width:24px;height:24px;border-radius:12px;background:#D6ECF3;color:#084F64;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.note{font-size:12px;color:#084F64;background:#D6ECF3;border-radius:10px;padding:8px 10px}
+.tbl{display:grid;gap:8px;align-items:center}
+svg.pl{display:block;width:100%;height:auto}
+#tabs{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #DCE8ED;display:flex;justify-content:center;padding:6px 8px calc(8px + env(safe-area-inset-bottom));z-index:5}
+#tabs div{display:flex;width:100%;max-width:480px}
+#tabs button{flex:1;height:52px;border:0;background:transparent;color:#456170;font-size:12px;font-weight:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+#tabs button[aria-current=page]{color:#0B6E8A;font-weight:600}
+#toast{position:fixed;left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));max-width:448px;margin:0 auto;background:#0E2A38;color:#fff;border-radius:12px;padding:6px 6px 6px 16px;display:none;align-items:center;justify-content:space-between;gap:12px;z-index:6;font-size:14px}
+#toast.on{display:flex}
+#toast button{min-height:40px;border:0;border-radius:8px;background:#fff;color:#0E2A38;font-weight:600;padding:0 14px}
+#splash{position:fixed;inset:0;background:#0B6E8A;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:9;transition:opacity .4s;overflow:hidden}
+#splash.off{opacity:0;pointer-events:none}
+#splash h1{font-size:38px}
+#splash svg.wv{position:absolute;left:0;bottom:0;width:100%;height:200px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<nav id="tabs" aria-label="Main"></nav>
+<div id="toast" role="status"></div>
+<div id="splash"><svg role="img" aria-label="My Pool" viewBox="60 110 400 320" width="230" height="184" style="margin-top:-120px"><rect x="86" y="140" width="340" height="232" rx="30" fill="#4FB3D9" stroke="#fff" stroke-width="18"/><rect x="95" y="149" width="108" height="214" rx="20" fill="#8FD0EA"/><rect x="95" y="149" width="72" height="214" rx="20" fill="#B9E3F3"/><rect x="95" y="149" width="36" height="214" rx="20" fill="#DDF2FA"/><path d="M236 214c14-10 28-10 42 0s28 10 42 0s28-10 42 0M236 262c14-10 28-10 42 0s28 10 42 0" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="10" stroke-linecap="round"/><circle cx="392" cy="356" r="64" fill="#fff" stroke="#0B6E8A" stroke-width="12"/><path d="M364 357l20 20 38-42" fill="none" stroke="#0B6E8A" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg><h1>My Pool</h1><span style="color:#E4F3F8">Chlorine · pH · reminders</span><svg class="wv" aria-hidden="true" viewBox="0 0 390 200" preserveAspectRatio="none"><path d="M0 70c65-40 130-40 195 0s130 40 195 0V200H0Z" fill="#2A93B5"/><path d="M0 120c65 36 130 36 195 0s130-36 195 0V200H0Z" fill="#4FB3D9"/></svg></div>
+<script>
+'use strict';
+const KEY='mypool.v1', DAY=864e5;
+const uid=()=>Math.random().toString(36).slice(2,9);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=v=>{if(v===''||v==null)return null;const n=parseFloat(String(v).replace(',','.'));return isFinite(n)?n:null};
+const fmt=v=>v==null?'–':String(Number(Number(v).toFixed(2)));
+const dstr=(t,o)=>new Date(t).toLocaleDateString('en-GB',o||{weekday:'short',day:'numeric',month:'short'});
+const tstr=t=>new Date(t).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+
+function defaults(){return{
+season:'winter',surface:'liner',
+dims:{L:null,W:null,D:null,ownVol:null,steps:[{name:'Step 1',len:null,dep:null,h:null},{name:'Step 2',len:null,dep:null,h:null},{name:'Step 3',len:null,dep:null,h:null},{name:'Small step',part:true,len:null,dep:null,h:null}]},
+tests:[
+{id:'fc',name:'Free chlorine',unit:'ppm',min:1,max:3,lo:0,hi:5,freq:'always'},
+{id:'ph',name:'pH',unit:'',min:7.2,max:7.6,lo:6.8,hi:8,freq:'always'},
+{id:'ta',name:'Total alkalinity',unit:'ppm',min:80,max:120,lo:0,hi:200,freq:'monthly'},
+{id:'cya',name:'Stabiliser (CYA)',unit:'ppm',min:30,max:50,lo:0,hi:100,freq:'monthly'},
+{id:'salt',name:'Salt',unit:'ppm',min:null,max:null,lo:0,hi:6000,freq:'monthly',season:'summer'},
+{id:'temp',name:'Water temperature',unit:'°C',min:null,max:null,lo:0,hi:40,freq:'off'},
+{id:'cc',name:'Combined chlorine',unit:'ppm',min:0,max:0.5,lo:0,hi:2,freq:'off'},
+{id:'ch',name:'Calcium hardness',unit:'ppm',min:200,max:400,lo:0,hi:600,freq:'off'},
+{id:'phos',name:'Phosphates',unit:'ppb',min:0,max:500,lo:0,hi:1000,freq:'off'}],
+logs:[],
+products:[
+{id:'p1',name:'Dichlor powder',role:'chlorine',form:'powder',chem:'dichlor',strength:56,stock:null,full:null,low:0.5},
+{id:'p2',name:'pH minus',role:'phminus',form:'powder',chem:'',strength:null,stock:null,full:null,low:0.5},
+{id:'p3',name:'Pool salt',role:'salt',form:'powder',chem:'',strength:null,stock:null,full:null,low:5}],
+doseProduct:'p1',
+rem:{summer:{days:3,time:'18:00'},winter:{days:7,time:'10:00'},extra:null,retest:true},
+tasks:[
+{id:'bw',name:'Backwash the filter',days:14,last:null,on:true},
+{id:'bask',name:'Empty skimmer and pump baskets',days:7,last:null,on:true,steps:['Pump off.','Empty the skimmer basket.','Empty the pump basket and check the lid seal.','Pump on. Check that water is flowing.']},
+{id:'brush',name:'Brush walls and steps, vacuum',days:7,last:null,on:true,steps:['Brush the walls, steps and corners towards the floor.','Vacuum the floor slowly.','Empty the baskets afterwards.']},
+{id:'level',name:'Check water level',days:7,last:null,on:true,steps:['The water should be about halfway up the skimmer opening.','Top up with the hose if it is low.','After heavy rain, lower it by backwashing a little longer.']},
+{id:'cell',name:'Inspect and clean salt cell',days:90,last:null,on:true,season:'summer',steps:['Switch off the chlorinator and the pump.','Look at the plates for white scale.','If scaled, soak in cell cleaner as the manual says. Never scrape with metal.','Refit and check for leaks.']}],
+auto:{on:true,summer:'05-01',winter:'11-01',key:null},
+equip:{clean:null,delta:0.5,pressures:[],pumpS:null,pumpW:null,filter:'sand',pump:'',chlor:''},
+lastBackup:null}}
+
+let mem=null;
+function load(){let s=null;try{s=JSON.parse(localStorage.getItem(KEY))}catch(e){}if(!s)s=mem;const d=defaults();if(!s)return d;
+for(const k in d){if(s[k]===undefined)s[k]=d[k];else if(d[k]&&typeof d[k]==='object'&&!Array.isArray(d[k]))for(const j in d[k])if(s[k][j]===undefined)s[k][j]=d[k][j]}return s}
+function save(){mem=S;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let S=load(),view='today',ui={period:60,hist:'fc'},draft=null,undoSnap=null,toastT=null;
+
+/* ---------- calculations ---------- */
+const test=id=>S.tests.find(t=>t.id===id);
+const inSeason=t=>!t.season||t.season===S.season;
+const active=f=>S.tests.filter(t=>t.freq===f&&inSeason(t));
+function latest(id){for(let i=S.logs.length-1;i>=0;i--){const v=S.logs[i].v[id];if(v!=null)return{val:v,t:S.logs[i].t}}return null}
+function status(t,v){if(v==null||t.min==null||t.max==null)return null;return v<t.min?['Low','warn']:v>t.max?['High','warn']:['OK','']}
+function stepVol(st){const d=S.dims;if(st.dep==null||st.h==null)return 0;const len=st.part?(st.len==null?null:st.len/100):(st.len!=null?st.len/100:d.W);if(len==null)return 0;return Math.min(len,d.W||len)*(st.dep/100)*Math.min(st.h/100,d.D||st.h/100)}
+function calcVolume(){const d=S.dims;if(d.L==null||d.W==null||d.D==null)return null;let v=d.L*d.W*d.D;for(const st of d.steps)v-=stepVol(st);return Math.max(0,v)}
+function volume(){return S.dims.ownVol!=null?S.dims.ownVol:calcVolume()}
+function nextCheck(){const r=S.rem[S.season],last=S.logs.length?S.logs[S.logs.length-1].t:null;const d=new Date(last?last+(r.days||7)*DAY:Date.now());const[h,m]=String(r.time||'10:00').split(':');d.setHours(+h||0,+m||0,0,0);let t=d.getTime();if(S.rem.extra&&S.rem.extra<t)t=S.rem.extra;return t}
+function tomorrowAt(){const d=new Date(Date.now()+DAY);const[h,m]=String(S.rem[S.season].time||'10:00').split(':');d.setHours(+h||0,+m||0,0,0);return d.getTime()}
+function monthlyDue(){const ts=active('monthly');if(!ts.length)return null;let last=null;for(const t of ts){const l=latest(t.id);if(l&&(last==null||l.t>last))last=l.t}return{last,due:last==null?Date.now():last+30*DAY}}
+function doseProd(){return S.products.find(p=>p.id===S.doseProduct)||S.products.find(p=>p.role==='chlorine')}
+function roundAmt(x){return x>=100?Math.round(x/10)*10:x>=20?Math.round(x/5)*5:Math.round(x)}
+function chlorineDose(fc){const t=test('fc'),p=doseProd(),vol=volume();if(t.min==null||t.max==null)return null;const ppm=(t.min+t.max)/2-fc;if(ppm<=0)return null;if(!p||!p.strength)return{need:'Set your chlorine product and its strength in My chemicals to get a dose.'};const per=ppm*100/p.strength,u=p.form==='liquid'?'ml':'g';if(!vol)return{need:'Enter your pool dimensions to get the amount. It is about '+fmt(per)+' '+u+' of '+p.name+' for each m³ of water.'};return{amt:roundAmt(per*vol),u,p,ppm}}
+function cyaEstimate(){const m=latest('cya'),vol=volume();let add=0;if(vol)for(const l of S.logs){if(m&&l.t<=m.t)continue;for(const a of l.added||[]){const p=S.products.find(x=>x.id===a.pid);if(!p||!p.strength||!a.amt)continue;const k=p.chem==='dichlor'?0.9:p.chem==='trichlor'?0.6:0;add+=a.amt*p.strength/100/vol*k}}return{base:m?m.val:null,add,est:m?m.val+add:null}}
+function autoSeason(){const a=S.auto;if(!a||!a.on)return null;const now=Date.now(),y=new Date().getFullYear(),c=[];for(const yr of[y-1,y])for(const k of['summer','winter']){const[m,d]=String(a[k]).split('-').map(Number),t=new Date(yr,m-1,d).getTime();if(t<=now)c.push([t,k])}c.sort((p,q)=>q[0]-p[0]);return c.length?{season:c[0][1],key:c[0][1]+c[0][0]}:null}
+function applyAuto(){const r=autoSeason();if(!r||S.auto.key===r.key)return null;S.auto.key=r.key;let sw=null;if(S.season!==r.season){S.season=r.season;S.rem.extra=null;sw=r.season}save();return sw}
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const sday=k=>{const[m,d]=String(S.auto[k]).split('-').map(Number);return d+' '+MON[m-1]};
+function taskDue(k){return k.last==null?null:k.last+(k.days||7)*DAY}
+function dueText(t){if(t==null)return'Not done yet';const n=Math.round((new Date(t).setHours(0,0,0,0)-new Date().setHours(0,0,0,0))/DAY);return n<0?'Overdue '+(-n)+' day'+(n===-1?'':'s'):n===0?'Due today':n===1?'Due tomorrow':'Due in '+n+' days'}
+function lastPressure(){const p=S.equip.pressures;return p.length?p[p.length-1]:null}
+function pressureHigh(){const e=S.equip,l=lastPressure();return!!(l&&e.clean!=null&&l.v>=e.clean+(e.delta||0.5))}
+function taskSteps(k){if(k.id==='bw')return S.equip.filter==='cartridge'?['Pump off. Open the filter and lift out the cartridge.','Hose it down from top to bottom, between the pleats.','Refit the cartridge and close the filter.','Pump on. Note the pressure on the gauge.']:['Pump off. Turn the valve to Backwash.','Pump on about 2 minutes, until the water runs clear.','Pump off. Valve to Rinse. Pump on 30 seconds.','Pump off. Valve back to Filter. Pump on.','Top up the pool water and note the pressure.'];return k.steps||[]}
+function advice(){const out=[];if(!S.logs.length)return[{h:'Log your first test',s:'Tap "Log a test" to enter today\'s chlorine and pH.'}];
+const fc=latest('fc'),ph=latest('ph'),tf=test('fc'),tp=test('ph'),vol=volume();
+if(fc&&tf.min!=null){if(fc.val<tf.min){const d=chlorineDose(fc.val);if(d&&d.need)out.push({h:'Chlorine is low',s:d.need,w:1});else if(d)out.push({h:'Add about '+d.amt+' '+d.u+' of '+d.p.name,s:(S.season==='summer'?'Or raise the chlorinator output. ':'')+(d.p.form==='powder'?'Spread it over the water or dissolve it in a bucket first. ':'')+'Test again tomorrow.',w:1})}else if(fc.val>tf.max)out.push({h:'Chlorine is high',s:'Do not add more. '+(S.season==='summer'?'Lower the chlorinator output. ':'')+'It will fall by itself; test again in a day or two.',w:1})}
+if(ph&&tp.min!=null){if(ph.val>tp.max){const g=vol?roundAmt((ph.val-(tp.min+tp.max)/2)/0.1*10*vol):null;out.push({h:'pH is high'+(g?': about '+g+' g of pH minus':''),s:(g?'Rule of thumb only (10 g per m³ lowers pH about 0.1). ':'')+'Check the dose on your product label and add it in parts.',w:1})}else if(ph.val<tp.min)out.push({h:'pH is low',s:'Add pH plus as the product label says for your volume'+(vol?' ('+fmt(vol)+' m³)':'')+'.'+(S.surface==='liner'&&ph.val<7?' Low pH is hard on a liner, so correct it soon.':''),w:1})}
+const c=cyaEstimate(),tc=test('cya');if(c.est!=null&&tc.max!=null&&c.est>tc.max&&c.add>0)out.push({h:'Stabiliser is probably high (about '+Math.round(c.est)+' ppm)',s:'Test it to confirm. Stabiliser only goes down by replacing some of the water.',w:1});
+if(pressureHigh())out.push({h:'Filter pressure is high',s:'Time to backwash the filter.',w:1});
+if(!out.length)out.push({h:'Water is in range',s:'Nothing to add today.'});return out}
+
+/* ---------- drawings ---------- */
+function planSVG(H,labels){const W=350,d=S.dims,L=d.L||8,Wd=d.W||4,px=labels?40:14,py=labels?26:14,sc=Math.min((W-2*px)/L,(H-2*py)/Wd),pw=L*sc,ph=Wd*sc,x0=(W-pw)/2+(labels?8:0),y0=(H-ph)/2-(labels?8:0);
+let s='<svg class="pl" role="img" aria-label="Top view of the pool with its steps" viewBox="0 0 '+W+' '+H+'"><rect width="'+W+'" height="'+H+'" fill="#D5E1E6"/><rect x="'+x0+'" y="'+y0+'" width="'+pw+'" height="'+ph+'" rx="8" fill="#4FB3D9" stroke="#fff" stroke-width="5"/>';
+const full=d.steps.filter(st=>!st.part&&st.len==null),cols=['#DDF2FA','#B9E3F3','#8FD0EA','#74C4E3','#62BBDE'];let cum=[],x=0;for(const st of full){x+=(st.dep?st.dep/100:L*0.07)*sc;cum.push(Math.min(x,pw*0.7))}
+for(let i=full.length-1;i>=0;i--)s+='<rect x="'+(x0+2.5)+'" y="'+(y0+2.5)+'" width="'+Math.max(0,cum[i]-2.5)+'" height="'+(ph-5)+'" rx="5" fill="'+cols[Math.min(i,4)]+'"/>';
+let yy=y0+2.5;for(const st of d.steps.filter(st=>st.part||st.len!=null)){const w=(st.dep?st.dep/100:L*0.07)*sc,h=Math.min((st.len?st.len/100:Wd*0.3)*sc,ph-5);s+='<rect x="'+(x0+3)+'" y="'+(yy+.5)+'" width="'+Math.min(w,pw*0.7)+'" height="'+h+'" rx="5" fill="#F7FCFE" stroke="#8FD0EA"/>';yy=Math.min(yy+h+2,y0+ph-10)}
+const wx=x0+Math.max(cum.length?cum[cum.length-1]:0,0)+24;if(wx+60<x0+pw)s+='<path d="M'+wx+' '+(y0+ph*0.35)+'c8-6 16-6 24 0s16 6 24 0M'+(wx+30)+' '+(y0+ph*0.7)+'c8-6 16-6 24 0s16 6 24 0" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="3" stroke-linecap="round"/>';
+if(labels){const tx='font-family="inherit" font-size="12" font-weight="600" fill="#0E2A38" text-anchor="middle"';s+='<path d="M'+x0+' '+(y0+ph+16)+'h'+pw+'M'+x0+' '+(y0+ph+10)+'v12M'+(x0+pw)+' '+(y0+ph+10)+'v12M'+(x0-16)+' '+y0+'v'+ph+'M'+(x0-22)+' '+y0+'h12M'+(x0-22)+' '+(y0+ph)+'h12" fill="none" stroke="#0E2A38" stroke-width="1.5"/><text x="'+(x0+pw/2)+'" y="'+(y0+ph+32)+'" '+tx+'>'+(d.L!=null?fmt(d.L)+' m':'length')+'</text><text x="'+(x0-24)+'" y="'+(y0+ph/2)+'" '+tx+' transform="rotate(-90 '+(x0-24)+' '+(y0+ph/2)+')">'+(d.W!=null?fmt(d.W)+' m':'width')+'</text>';if(d.D!=null)s+='<text x="'+(x0+pw-10)+'" y="'+(y0+ph-10)+'" font-size="12" font-weight="600" fill="#0E2A38" text-anchor="end">depth '+fmt(d.D)+' m</text>'}
+return s+'</svg>'}
+function sideSVG(){const d=S.dims,L=d.L||8,D=d.D||1.5,sx=310/L,sy=72/D,fl=100,top=28,full=d.steps.filter(st=>!st.part&&st.len==null),n=full.length;let pts=[],x=20;full.forEach((st,i)=>{const h=st.h!=null?Math.min(st.h/100,D*0.97):D*(n-i)/(n+1),w=(st.dep!=null?st.dep/100:0.3)*sx;pts.push([x,fl-h*sy,x+w]);x+=w});x=Math.min(x,250);
+let p='M20 '+top+'H330V'+fl+'H'+x;for(let i=n-1;i>=0;i--)p+='V'+pts[i][1]+'H'+pts[i][0];p+='Z';let o='M20 16V';if(n){o+=pts[0][1];for(let i=0;i<n;i++)o+='H'+Math.min(pts[i][2],250)+'V'+(i<n-1?pts[i+1][1]:fl)}else o+=fl;o+='H330V16';
+let s='<svg class="pl" role="img" aria-label="Side view of the pool and its steps" viewBox="0 0 350 116"><rect width="350" height="116" fill="#D5E1E6"/><path d="'+p+'" fill="#4FB3D9"/><path d="'+o+'" fill="none" stroke="#0E2A38" stroke-width="2" stroke-linejoin="round"/><path d="M20 '+top+'H330" stroke="#fff" stroke-width="2"/>';
+s+='<path d="M306 '+(top+2)+'V'+(fl-2)+'M301 '+(top+2)+'h10M301 '+(fl-2)+'h10" fill="none" stroke="#0E2A38" stroke-width="1.5"/><text x="298" y="68" text-anchor="end" font-size="12" font-weight="600" fill="#0E2A38">'+(d.D!=null?'depth '+fmt(d.D)+' m':'water depth')+'</text>';return s+'</svg>'}
+function gauge(t,v){if(t.min==null||t.max==null)return'';const lo=Math.min(t.lo,v??t.lo),hi=Math.max(t.hi,v??t.hi),pc=x=>Math.max(0,Math.min(100,(x-lo)/(hi-lo)*100)),a=pc(t.min),b=pc(t.max);return'<span class="g"><i class="w" style="width:'+a+'%"></i><i class="k" style="width:'+(b-a)+'%"></i><i class="w" style="flex:1"></i>'+(v!=null?'<b style="left:'+pc(v)+'%"></b>':'')+'</span>'}
+function chartSVG(t){const now=Date.now(),from=now-ui.period*DAY,pts=S.logs.filter(l=>l.t>=from&&l.v[t.id]!=null).map(l=>[l.t,l.v[t.id]]);
+let lo=t.lo,hi=t.hi;for(const p of pts){lo=Math.min(lo,p[1]);hi=Math.max(hi,p[1])}if(t.min==null&&pts.length){lo=Math.min(...pts.map(p=>p[1]));hi=Math.max(...pts.map(p=>p[1]));if(hi===lo){hi+=1;lo-=1}}
+const X=x=>30+(x-from)/(now-from)*284,Y=y=>110-(y-lo)/(hi-lo)*100,tx='font-size="12" fill="#456170"';
+let s='<svg class="pl" role="img" aria-label="'+esc(t.name)+' over time" viewBox="0 0 320 132">';
+if(t.min!=null&&t.max!=null)s+='<rect x="30" y="'+Y(t.max)+'" width="290" height="'+(Y(t.min)-Y(t.max))+'" fill="#D6ECF3"/>';
+s+='<path d="M30 110h290M30 10h290" stroke="#E3ECF0"/><text x="0" y="114" '+tx+'>'+fmt(lo)+'</text><text x="0" y="16" '+tx+'>'+fmt(hi)+'</text>';
+if(t.min!=null&&t.min>lo)s+='<text x="0" y="'+(Y(t.min)+4)+'" '+tx+'>'+fmt(t.min)+'</text>';if(t.max!=null&&t.max<hi)s+='<text x="0" y="'+(Y(t.max)+4)+'" '+tx+'>'+fmt(t.max)+'</text>';
+const roles=t.id==='fc'?['chlorine']:t.id==='ph'?['phminus','phplus']:t.id==='salt'?['salt']:[];let marks=0;
+for(const l of S.logs){if(l.t<from)continue;if((l.added||[]).some(a=>{const p=S.products.find(x=>x.id===a.pid);return p&&roles.includes(p.role)})){s+='<path d="M'+X(l.t)+' 10v100" stroke="#0E2A38" stroke-width="1.5" stroke-dasharray="4 4"/>';marks++}}
+if(pts.length>1)s+='<polyline points="'+pts.map(p=>X(p[0]).toFixed(1)+','+Y(p[1]).toFixed(1)).join(' ')+'" fill="none" stroke="#0B6E8A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';
+for(const p of pts){const st=status(t,p[1]),bad=st&&st[1];s+='<circle cx="'+X(p[0]).toFixed(1)+'" cy="'+Y(p[1]).toFixed(1)+'" r="'+(bad?6:4)+'" fill="'+(bad?'#B4500A':'#0B6E8A')+'"'+(bad?' stroke="#fff" stroke-width="2"':'')+'/>'}
+s+='<text x="30" y="130" '+tx+'>'+dstr(from,{day:'numeric',month:'short'})+'</text><text x="320" y="130" text-anchor="end" '+tx+'>today</text>';
+if(marks)s+='<text x="175" y="130" text-anchor="middle" '+tx+'>dashed = product added</text>';if(!pts.length)s+='<text x="175" y="64" text-anchor="middle" '+tx+'>No tests in this period yet</text>';return s+'</svg>'}
+
+/* ---------- small pieces ---------- */
+const I={drop:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.500 6-11 6-11z"/>',plus:'<path d="M12 5v14M5 12h14"/>',pool:'<path d="M3 17c2 0 2-1.500 4.500-1.500S10 17 12 17s2-1.500 4.500-1.500S19 17 21 17M7 13V5a2 2 0 0 1 4 0M13 13V5a2 2 0 0 1 4 0M7 9h6"/>',bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4l2-2zM10 21h4"/>',set:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',down:'<path d="M6 9l6 6 6-6"/>',chart:'<path d="M4 5v14h16M8 15l4-5 3 3 4-6"/>',back:'<path d="M15 5l-7 7 7 7"/>'};
+const ic=(n,z)=>'<svg aria-hidden="true" width="'+(z||22)+'" height="'+(z||22)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+I[n]+'</svg>';
+const back=(v,l)=>'<button class="lnk" data-a="go" data-v="'+v+'" style="display:flex;align-items:center;gap:4px">'+ic('back',18)+l+'</button>';
+const tog=(on,a,id,l)=>'<button class="sw-t" role="switch" aria-checked="'+!!on+'" aria-label="'+esc(l)+'" data-a="'+a+'" data-id="'+id+'"><i></i></button>';
+const inp=(path,val,o)=>{o=o||{};return'<input class="in '+(o.c||'')+'" '+(o.text?'':'inputmode="decimal"')+' data-b="'+path+'" data-t="'+(o.text?'s':'n')+'" value="'+esc(val??'')+'" placeholder="'+esc(o.ph||'')+'" aria-label="'+esc(o.l||'')+'"'+(o.live?' data-live-src="1"':'')+'>'};
+const seg=(opts,cur,a,extra,cls)=>'<div class="seg '+(cls||'')+'">'+opts.map(o=>'<button aria-pressed="'+(o[0]===cur)+'" data-a="'+a+'" data-val="'+o[0]+'" '+(extra||'')+'>'+o[1]+'</button>').join('')+'</div>';
+const SW={fc:[[0,'#FBF7D0'],[0.5,'#F7EE9C'],[1,'#F2E36A'],[2,'#EBD23A'],[3,'#E0BC1E'],[5,'#C99A0A']],ph:[[6.8,'#F2C230'],[7,'#F2A23A'],[7.2,'#EE8244'],[7.4,'#E8604C'],[7.6,'#DE4458'],[7.8,'#CC3070'],[8,'#B02484']]};
+const CHEM={dichlor:'Dichlor: each 1 ppm of chlorine also adds about 0.9 ppm stabiliser (CYA). The app keeps count.',trichlor:'Trichlor: adds about 0.6 ppm stabiliser per 1 ppm of chlorine and lowers pH. The app keeps count.',calhypo:'Calcium hypochlorite adds calcium, not stabiliser. With a liner, dissolve it in a bucket of water first.',hypo:'Liquid chlorine adds only chlorine. It loses strength in storage, so buy it fresh.'};
+const SURF={liner:'Liner: soft brush only, never let undissolved powder sit on it, and keep pH from staying under 7.0.',tiles:'Tiles: keep calcium hardness in range so the water does not attack the grout. Scrub the grout lines.',plaster:'Plaster: calcium hardness matters; low calcium or low pH slowly etches the surface.',fibreglass:'Fibreglass: soft brush only; keep pH and calcium in range to protect the gel coat.'};
+
+/* ---------- views ---------- */
+const V={};
+V.today=()=>{const nc=nextCheck(),due=Date.now()>=nc,md=monthlyDue(),c=cyaEstimate();
+const tiles=active('always').map(t=>{const l=latest(t.id),st=l?status(t,l.val):null;return'<button class="card tile" data-a="hist" data-id="'+t.id+'"><span class="b" style="font-size:13px">'+esc(t.name)+'</span><span class="row"><span class="big">'+(l?fmt(l.val):'–')+'</span>'+(st?'<span class="chip '+st[1]+'">'+st[0]+'</span>':'')+'</span>'+gauge(t,l?l.val:null)+'<span class="sm">'+(t.min!=null&&t.max!=null?'Target '+fmt(t.min)+'–'+fmt(t.max)+' '+esc(t.unit):l?dstr(l.t):'')+'</span></button>'}).join('');
+const mt=active('monthly').map(t=>{const l=latest(t.id);return l?esc(t.name.split(' (')[0])+' '+fmt(l.val):null}).filter(Boolean).join(' · ');
+return'<div class="row"><div class="col"><span class="sub">'+dstr(Date.now(),{weekday:'long',day:'numeric',month:'long'})+'</span><h1>My pool</h1></div><button class="ico" aria-label="Settings: what I test" data-a="go" data-v="settings">'+ic('set')+'</button></div>'
++seg([['summer','Summer · salt'],['winter','Winter · chlorine']],S.season,'season')+(S.auto.on?'<span class="sm">Switches by itself: summer from '+sday('summer')+', winter from '+sday('winter')+'</span>':'')
++'<div class="card np">'+planSVG(150)+'<div class="row" style="padding:12px 16px"><div class="col"><span class="sm">'+(due?'Check is due':'Next check')+' · every '+(S.rem[S.season].days||7)+' days</span><span class="b" style="font-size:20px">'+(due?'Today':dstr(nc,{weekday:'long',day:'numeric',month:'short'}))+'</span></div><button class="btn" data-a="go" data-v="log">Log a test</button></div></div>'
++(tiles?'<div class="tiles">'+tiles+'</div>':'')
++advice().map(a=>'<div class="card '+(a.w?'warn':'')+'" style="gap:2px"><span class="b">'+esc(a.h)+'</span><span class="sm">'+esc(a.s)+'</span></div>').join('')
++(md?'<div class="card" style="flex-direction:row;justify-content:space-between;align-items:center"><div class="col"><span class="b" style="font-weight:500">Monthly full test</span><span class="sm">'+(mt||'Not tested yet')+(md.last?' · tested '+dstr(md.last,{day:'numeric',month:'short'}):'')+(c.add>0.5?' · stabiliser est. '+(c.est!=null?Math.round(c.est):'+'+Math.round(c.add))+' ppm':'')+'</span></div><span class="chip '+(Date.now()>=md.due?'warn':'')+'">'+(Date.now()>=md.due?'Due now':'Due '+dstr(md.due,{day:'numeric',month:'short'}))+'</span></div>':'')
++'<button class="btn o" data-a="rain">Rain or heavy use · check again tomorrow</button>'};
+
+V.log=()=>{if(!draft)draft={v:{},added:[],note:''};const md=monthlyDue(),open=ui.full||(md&&Date.now()>=md.due);
+const field=t=>{const v=draft.v[t.id],sw=SW[t.id];return'<div class="card"><div class="row"><label for="d_'+t.id+'" class="col"><span class="b" style="font-size:16px">'+esc(t.name)+'</span><span class="sm">'+[t.unit,t.min!=null&&t.max!=null?'target '+fmt(t.min)+'–'+fmt(t.max):''].filter(Boolean).join(' · ')+'</span></label><input id="d_'+t.id+'" class="in r big" inputmode="decimal" data-d="'+t.id+'" value="'+esc(v??'')+'" placeholder="–"></div>'+(sw?'<div class="sw">'+sw.map(s=>'<button aria-label="'+s[0]+'" aria-pressed="'+(v===s[0])+'" data-a="swatch" data-id="'+t.id+'" data-val="'+s[0]+'"><span style="background:'+s[1]+'"></span>'+s[0]+'</button>').join('')+'</div>':'')+'</div>'};
+const row=t=>'<div class="row"><label for="d_'+t.id+'" class="col"><span style="font-weight:500">'+esc(t.name)+'</span><span class="sm">'+[t.unit,t.min!=null&&t.max!=null?'target '+fmt(t.min)+'–'+fmt(t.max):''].filter(Boolean).join(' · ')+'</span></label><input id="d_'+t.id+'" class="in r" style="width:104px" inputmode="decimal" data-d="'+t.id+'" value="'+esc(draft.v[t.id]??'')+'" placeholder="–"></div>';
+const mon=active('monthly');
+return'<div class="col"><span class="sub">'+dstr(Date.now(),{weekday:'long',day:'numeric',month:'long'})+' · '+(S.season==='summer'?'Summer':'Winter')+' mode</span><h1>Log a test</h1></div>'
++active('always').map(field).join('')
++(active('always').some(t=>SW[t.id])?'<span class="sm">Tap the colour that matches your test kit, or type the number.</span>':'')
++(mon.length?'<div class="card"><button class="row" style="border:0;background:transparent;padding:0;text-align:left;min-height:44px" data-a="full" aria-expanded="'+!!open+'"><span class="col"><span style="font-weight:500">Full test · optional</span><span class="sm">'+mon.map(t=>esc(t.name.split(' (')[0])).join(', ')+(md?' · '+(Date.now()>=md.due?'due now':'next due '+dstr(md.due,{day:'numeric',month:'short'})):'')+'</span></span>'+ic('down',20)+'</button>'+(open?mon.map(row).join(''):'')+'</div>':'')
++'<div class="card"><div class="row"><span class="col"><span style="font-weight:500">Chemicals added</span><span class="sm">Updates your stock and the charts</span></span><button class="btn o" data-a="addChem" aria-label="Add a chemical">'+ic('plus',20)+'</button></div>'
++draft.added.map((a,i)=>{const p=S.products.find(x=>x.id===a.pid);return'<div class="row"><select class="in grow" data-da="'+i+'" aria-label="Product">'+S.products.map(p=>'<option value="'+p.id+'"'+(p.id===a.pid?' selected':'')+'>'+esc(p.name)+'</option>').join('')+'</select><input class="in r" style="width:92px" inputmode="decimal" data-dm="'+i+'" value="'+esc(a.amt??'')+'" placeholder="'+(p&&p.form==='liquid'?'ml':'g')+'" aria-label="Amount"><button class="btn x" data-a="delChem" data-id="'+i+'" aria-label="Remove">×</button></div>'}).join('')+'</div>'
++'<label class="f">Note: weather, how the water looks<input class="in" style="font-weight:400" data-dn="1" value="'+esc(draft.note)+'" placeholder="e.g. heavy rain, cloudy water"></label>'
++'<button class="btn big" data-a="saveLog">Save and show what to add</button>'};
+
+V.pool=()=>{const vol=volume(),dp=doseProd();
+return'<div class="row"><h1>Pool</h1><button class="btn o" data-a="go" data-v="dims">Edit dimensions</button></div>'
++'<div class="card np">'+planSVG(196,1)+'<div class="row" style="padding:8px 12px 8px 16px"><span>Volume <span class="b">'+(vol!=null?fmt(vol)+' m³':'not set')+'</span></span><select class="in" style="width:150px" data-b="surface" data-t="s" aria-label="Pool surface">'+[['liner','Vinyl liner'],['tiles','Tiles'],['plaster','Plaster'],['fibreglass','Fibreglass']].map(o=>'<option value="'+o[0]+'"'+(S.surface===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select></div></div>'
++'<span class="sm">'+SURF[S.surface]+'</span>'
++'<div class="row"><button class="btn o grow" data-a="go" data-v="chem">My chemicals</button><button class="btn o grow" data-a="go" data-v="equip">Equipment</button></div>'
++'<h2>Sanitiser by season</h2><div class="card" style="flex-direction:row;justify-content:space-between;align-items:center"><div class="col"><span style="font-weight:500">Switch season by itself</span><span class="sm">On the dates below. You can still switch by hand on Today.</span></div>'+tog(S.auto.on,'autoOn','','Switch season by itself')+'</div><div class="row" style="align-items:stretch"><div class="card grow '+(S.season==='summer'?'sel':'')+'" style="gap:3px"><span class="sm b">Summer'+(S.season==='summer'?' · active now':'')+'</span><span class="b">Salt chlorinator</span><span class="sm">'+esc(S.equip.chlor||'Model not set')+'</span>'+dsel('summer')+'</div><div class="card grow '+(S.season==='winter'?'sel':'')+'" style="gap:3px"><span class="sm b">Winter'+(S.season==='winter'?' · active now':'')+'</span><span class="b">Added chlorine</span><span class="sm">'+(dp?esc(dp.name)+(dp.strength?' · '+fmt(dp.strength)+' %':''):'Product not set')+'</span>'+dsel('winter')+'</div></div>'
++'<h2>Target ranges</h2><div class="card"><div class="tbl" style="grid-template-columns:1.5fr 1fr 1fr"><span></span><span class="sm">From</span><span class="sm">To</span>'
++S.tests.map((t,i)=>t.freq==='off'?'':'<span>'+esc(t.name)+(t.unit?' <span class="sm">'+esc(t.unit)+'</span>':'')+'</span>'+inp('tests.'+i+'.min',t.min,{l:t.name+' from'})+inp('tests.'+i+'.max',t.max,{l:t.name+' to'})).join('')
++'</div><span class="sm">Common defaults. Set the salt range from your chlorinator manual.</span></div>'};
+
+V.dims=()=>{const d=S.dims;return'<div class="row" style="align-items:flex-end"><div class="col">'+back('pool','Pool')+'<h1>Dimensions</h1></div></div>'
++'<div class="card np" data-live="side">'+sideSVG()+'</div>'
++'<div class="card" style="flex-direction:row"><label class="f">Length, m'+inp('dims.L',d.L,{live:1})+'</label><label class="f">Width, m'+inp('dims.W',d.W,{live:1})+'</label><label class="f">Water depth, m'+inp('dims.D',d.D,{live:1})+'</label></div>'
++'<div class="card"><div class="tbl" style="grid-template-columns:1.6fr 1fr 1fr 1fr 28px;gap:6px"><span class="b" style="font-size:13px">Steps, cm</span><span class="sm">Length</span><span class="sm">Depth</span><span class="sm">Height</span><span></span>'
++d.steps.map((st,i)=>inp('dims.steps.'+i+'.name',st.name,{text:1,l:'Step name'}).replace('class="in','style="font-size:13px;padding:0 5px" class="in')+inp('dims.steps.'+i+'.len',st.len,{ph:st.part?'cm':'full',live:1,l:st.name+' length'})+inp('dims.steps.'+i+'.dep',st.dep,{ph:'cm',live:1,l:st.name+' depth'})+inp('dims.steps.'+i+'.h',st.h,{ph:'cm',live:1,l:st.name+' height'})+'<button class="btn x" style="min-width:28px" data-a="delStep" data-id="'+i+'" aria-label="Delete '+esc(st.name)+'">×</button>').join('')
++'</div><span class="sm">Depth = front to back. Height = from the pool floor up to the top of the step; for a step that sits on another step, only its own height. Leave Length empty for a step across the whole width.</span></div>'
++'<button class="btn o" data-a="addStep">Add another step or shape</button>'
++'<div class="card" style="flex-direction:row;justify-content:space-between;align-items:center"><div class="col"><span class="sm">Water volume, worked out</span><span class="big" style="font-size:22px" data-live="vol">'+liveVol()+'</span></div><label class="f" style="flex:0 0 130px">Or my own, m³'+inp('dims.ownVol',d.ownVol,{ph:'optional',live:1})+'</label></div>'
++'<div class="card np" data-live="plan">'+planSVG(170,1)+'</div>'};
+const dsel=k=>{if(!S.auto.on)return'';const[m,d]=String(S.auto[k]).split('-').map(Number),st='height:40px;font-size:14px;padding:0 2px';return'<span class="sm" style="margin-top:4px">Starts on</span><div class="row" style="justify-content:flex-start;gap:4px"><select class="in" style="width:56px;'+st+'" data-au="'+k+'.d" aria-label="'+k+' start day">'+[...Array(31)].map((_,i)=>'<option'+(i+1===d?' selected':'')+'>'+(i+1)+'</option>').join('')+'</select><select class="in" style="width:68px;'+st+'" data-au="'+k+'.m" aria-label="'+k+' start month">'+MON.map((n,i)=>'<option value="'+(i+1)+'"'+(i+1===m?' selected':'')+'>'+n+'</option>').join('')+'</select></div>'};
+const liveVol=()=>{const v=calcVolume();return v!=null?fmt(v)+' m³':'enter sizes'};
+const LIVE={vol:liveVol,side:sideSVG,plan:()=>planSVG(170,1)};
+
+V.settings=()=>'<div class="col">'+back('today','Today')+'<h1>What I test</h1></div><span class="sm">Always = in every check. Monthly = only in the full test. Off = hidden.</span>'
++'<div class="list">'+S.tests.map((t,i)=>'<div class="row"><div class="col"><span style="font-weight:500">'+esc(t.name)+'</span>'+(t.season?'<span class="sm">'+(t.season==='summer'?'Summer only':'Winter only')+'</span>':'')+'</div><div class="row" style="gap:2px">'+seg([['always','Always'],['monthly','Monthly'],['off','Off']],t.freq,'freq','data-id="'+i+'"','s')+(t.custom?'<button class="btn x" data-a="delTest" data-id="'+i+'" aria-label="Delete '+esc(t.name)+'">×</button>':'')+'</div></div>').join('')+'</div>'
++'<div class="card"><span class="b">Add my own test</span><div class="row"><input class="in grow" id="nt_name" placeholder="Name" aria-label="Test name" style="font-weight:500"><input class="in" id="nt_unit" placeholder="Unit" aria-label="Unit" style="width:80px;font-weight:500"></div><div class="row"><input class="in" id="nt_min" inputmode="decimal" placeholder="Target from" aria-label="Target from"><input class="in" id="nt_max" inputmode="decimal" placeholder="Target to" aria-label="Target to"><button class="btn" data-a="addTest">Add</button></div></div>';
+
+V.history=()=>{const ts=S.tests.filter(t=>t.freq!=='off'||S.logs.some(l=>l.v[t.id]!=null)),t=test(ui.hist)||ts[0];
+return'<h1>History</h1>'
++seg([[60,'2 months'],[180,'Season'],[365,'Year']],ui.period,'period')
++'<div class="row" style="overflow-x:auto;justify-content:flex-start;gap:6px">'+ts.map(x=>'<button class="btn '+(x.id===t.id?'':'w')+'" style="flex:none;min-height:40px;font-size:13px" data-a="histSel" data-id="'+x.id+'">'+esc(x.name.split(' (')[0])+'</button>').join('')+'</div>'
++'<div class="card"><div class="row"><span class="b">'+esc(t.name)+'</span><span class="sm">'+(t.min!=null&&t.max!=null?'Shaded = target '+fmt(t.min)+'–'+fmt(t.max):'')+'</span></div>'+chartSVG(t)+'</div>'
++(S.logs.length?'<div class="list">'+S.logs.slice().reverse().slice(0,40).map(l=>'<div class="row"><div class="col"><span class="b" style="font-size:14px">'+Object.keys(l.v).map(k=>{const x=test(k);return x?esc(x.id==='fc'?'Cl':x.id==='ph'?'pH':x.name.split(' (')[0])+' '+fmt(l.v[k]):''}).filter(Boolean).join(' · ')+'</span><span class="sm">'+dstr(l.t)+' · '+tstr(l.t)+(l.added&&l.added.length?' · added '+l.added.map(a=>{const p=S.products.find(x=>x.id===a.pid);return fmt(a.amt)+' '+(p&&p.form==='liquid'?'ml':'g')+' '+esc(p?p.name:'product')}).join(', '):'')+(l.note?' · '+esc(l.note):'')+'</span></div><button class="btn x" data-a="delLog" data-id="'+l.t+'" aria-label="Delete this test">×</button></div>').join('')+'</div>':'<span class="sm">No tests saved yet.</span>')};
+
+V.rem=()=>{const nc=nextCheck(),t0=new Date().setHours(0,0,0,0),sameDay=(a,b)=>new Date(a).setHours(0,0,0,0)===b;
+const wk=[...Array(7)].map((_,i)=>{const d=t0+i*DAY,c=sameDay(Math.max(nc,Date.now()),d),e=!c&&S.tasks.some(k=>k.on&&(!k.season||k.season===S.season)&&taskDue(k)!=null&&sameDay(Math.max(taskDue(k),Date.now()),d));return'<div>'+dstr(d,{weekday:'short'})+'<span class="'+(c?'c':e?'e':'')+'">'+new Date(d).getDate()+'</span></div>'}).join('');
+const sr=(k,l)=>'<div class="col" style="gap:6px;padding:10px 0"><div class="row"><span style="font-weight:500">'+l+'</span>'+(S.season===k?'<span class="sm b" style="color:#0B6E8A">Active now</span>':'')+'</div><div class="row" style="justify-content:flex-start;gap:8px"><span class="sm">Every</span>'+inp('rem.'+k+'.days',S.rem[k].days,{c:'r',l:l+' interval in days'}).replace('class="in','style="width:64px" class="in')+'<span class="sm">days at</span><input type="time" class="in" style="width:150px;font-size:15px" data-b="rem.'+k+'.time" data-t="s" value="'+esc(S.rem[k].time)+'" aria-label="'+l+' time"></div></div>';
+return'<h1>Reminders</h1><div class="card"><div class="wk">'+wk+'</div><span class="sm">Dark = water check · light = maintenance task due</span></div>'
++'<h2>Water check</h2><div class="list">'+sr('summer','Summer · salt')+sr('winter','Winter · chlorine')+'<div class="row"><div class="col"><span style="font-weight:500">Re-test after adding chemicals</span><span class="sm">Next day</span></div>'+tog(S.rem.retest,'retest','','Re-test after adding chemicals')+'</div></div>'
++'<button class="btn big" data-a="ics">Add to phone Calendar</button><span class="sm">Creates repeating calendar events with alerts, so reminders arrive when the app is closed. If you change the schedule, add again and delete the old events.</span>'
++'<h2>Maintenance · tap a task for how-to</h2><div class="list">'+S.tasks.map(k=>'<div class="row"><button class="col grow" style="border:0;background:transparent;padding:0;text-align:left;min-height:44px;justify-content:center" data-a="openTask" data-id="'+k.id+'"><span style="font-weight:500">'+esc(k.name)+'</span><span class="sm">Every '+k.days+' days'+(k.season?' · '+k.season+' only':'')+(k.on?' · '+dueText(taskDue(k)).toLowerCase():'')+'</span></button>'+tog(k.on,'taskOn',k.id,k.name)+'</div>').join('')+'</div>'
++'<button class="btn o" data-a="go" data-v="maint">Open maintenance</button>'};
+
+V.maint=()=>'<div class="col">'+back('rem','Reminders')+'<h1>Maintenance</h1></div>'
++S.tasks.map((k,i)=>{const open=ui.task===k.id,due=taskDue(k),hi=k.id==='bw'&&pressureHigh(),late=hi||(due!=null&&due<=Date.now());
+return'<div class="card '+(open?'sel':'')+'"><button class="row" style="border:0;background:transparent;padding:0;text-align:left;min-height:44px" data-a="openTask" data-id="'+k.id+'" aria-expanded="'+open+'"><span class="col"><span class="b">'+esc(k.name)+'</span><span class="sm">Every '+k.days+' days'+(k.last?' · last done '+dstr(k.last,{day:'numeric',month:'short'}):'')+(k.season?' · '+k.season+' only':'')+'</span></span><span class="chip '+(late?'warn':'')+'">'+(hi?'Pressure high':dueText(due))+'</span></button>'
++(open?(taskSteps(k).length?'<ol class="st">'+taskSteps(k).map(s=>'<li>'+esc(s)+'</li>').join('')+'</ol>':'')+(k.id==='bw'?'<span class="sm">Do it sooner if the gauge reads '+fmt(S.equip.delta||0.5)+' bar above the clean pressure'+(S.equip.clean!=null?' ('+fmt(S.equip.clean+(S.equip.delta||0.5))+' bar)':'')+'. Filter type is set in Equipment.</span>':'')+'<div class="row"><span class="sm">Repeat every</span>'+inp('tasks.'+i+'.days',k.days,{c:'r',l:'Repeat every, days'}).replace('class="in','style="width:64px" class="in')+'<span class="sm grow">days</span>'+(k.custom?'<button class="btn o" data-a="delTask" data-id="'+k.id+'">Delete</button>':'')+'</div><button class="btn" data-a="doneTask" data-id="'+k.id+'">Done today</button>':'')+'</div>'}).join('')
++'<div class="card"><span class="b">Add my own task</span><div class="row"><input class="in grow" id="nk_name" placeholder="Task name" aria-label="Task name" style="font-weight:500"><input class="in r" id="nk_days" inputmode="numeric" placeholder="days" aria-label="Repeat every, days" style="width:76px"><button class="btn" data-a="addTask">Add</button></div></div>';
+
+V.chem=()=>'<div class="col">'+back('pool','Pool')+'<h1>My chemicals</h1></div>'
++S.products.map((p,i)=>{const open=ui.prod===p.id,u=p.form==='liquid'?'L':'kg',low=p.stock!=null&&p.stock<=(p.low??0.5),pc=p.stock!=null&&p.full?Math.max(3,Math.min(100,p.stock/p.full*100)):0,dose=p.id===(doseProd()||{}).id;
+return'<div class="card '+(open?'sel':'')+'"><button class="col" style="border:0;background:transparent;padding:0;text-align:left;gap:6px" data-a="openProd" data-id="'+p.id+'" aria-expanded="'+open+'"><span class="row"><span class="b">'+esc(p.name)+(p.strength?' <span class="sm">'+fmt(p.strength)+' %</span>':'')+'</span>'+(low?'<span class="chip warn">Running low</span>':dose&&p.role==='chlorine'?'<span class="chip">Used for dosing</span>':'<span class="sm">'+(p.stock!=null?fmt(p.stock)+' '+u+' left':'stock not set')+'</span>')+'</span><span class="bar"><i class="'+(low?'low':'')+'" style="width:'+pc+'%"></i></span></button>'
++(open?'<label class="f">Product name'+inp('products.'+i+'.name',p.name,{text:1})+'</label>'
++'<div class="row"><label class="f">Used as<select class="in" data-b="products.'+i+'.role" data-t="s">'+[['chlorine','Chlorine'],['phminus','pH minus'],['phplus','pH plus'],['salt','Salt'],['other','Other']].map(o=>'<option value="'+o[0]+'"'+(p.role===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select></label><label class="f">Form<select class="in" data-b="products.'+i+'.form" data-t="s">'+[['powder','Powder'],['liquid','Liquid'],['tablets','Tablets']].map(o=>'<option value="'+o[0]+'"'+(p.form===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select></label></div>'
++(p.role==='chlorine'?'<div class="row"><label class="f">Active ingredient<select class="in" data-b="products.'+i+'.chem" data-t="s">'+[['dichlor','Dichlor (stabilised)'],['calhypo','Calcium hypochlorite'],['trichlor','Trichlor (tablets)'],['hypo','Liquid chlorine'],['','Other']].map(o=>'<option value="'+o[0]+'"'+(p.chem===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select></label><label class="f" style="flex:0 0 110px">Active chlorine %'+inp('products.'+i+'.strength',p.strength)+'</label></div>'+(CHEM[p.chem]?'<span class="note">'+CHEM[p.chem]+'</span>':''):'')
++'<div class="row"><label class="f">In stock, '+u+inp('products.'+i+'.stock',p.stock,{ph:u})+'</label><label class="f">Warn me below, '+u+inp('products.'+i+'.low',p.low)+'</label></div>'
++'<div class="row">'+(p.role==='chlorine'&&!dose?'<button class="btn grow" data-a="useDose" data-id="'+p.id+'">Use for dosing</button>':'')+'<button class="btn o grow" data-a="delProd" data-id="'+p.id+'">Delete product</button></div>':'')+'</div>'}).join('')
++'<button class="btn o" data-a="addProd">Add a product</button>';
+
+V.equip=()=>{const e=S.equip,l=lastPressure(),lim=e.clean!=null?e.clean+(e.delta||0.5):null,hi=pressureHigh();
+let g='';if(l&&lim!=null){const mx=Math.max(lim*1.3,l.v*1.05),pc=x=>Math.max(0,Math.min(100,x/mx*100));g='<span class="g"><i class="k" style="width:'+pc(lim)+'%"></i><i class="w" style="flex:1;border-radius:0 5px 5px 0"></i><b style="left:'+pc(l.v)+'%"></b></span><div class="row"><span class="sm">Clean '+fmt(e.clean)+' bar</span><span class="sm b" style="color:#8A3B00">Backwash at '+fmt(lim)+' bar</span></div>'}
+return'<div class="col">'+back('pool','Pool')+'<h1>Equipment</h1></div>'
++'<div class="card"><div class="row"><div class="col"><span class="b">Filter pressure</span><span class="sm">'+(l?'Read '+dstr(l.t,{day:'numeric',month:'short'}):'No reading yet')+'</span></div>'+(l?'<span><span class="big">'+fmt(l.v)+'</span> <span class="sm">bar</span></span>':'')+(hi?'<span class="chip warn">Backwash</span>':'')+'</div>'+g
++'<div class="row"><input class="in grow" id="pr_new" inputmode="decimal" placeholder="New reading, bar" aria-label="New pressure reading in bar"><button class="btn" data-a="addPressure">Log</button></div>'
++'<div class="row"><label class="f">Clean pressure, bar'+inp('equip.clean',e.clean)+'</label><label class="f">Backwash when above by'+inp('equip.delta',e.delta)+'</label></div></div>'
++'<div class="card"><span class="b">Pump running time, hours a day</span><div class="row"><label class="f">Summer'+inp('equip.pumpS',e.pumpS)+'</label><label class="f">Winter'+inp('equip.pumpW',e.pumpW)+'</label></div></div>'
++'<div class="card"><label class="f">Filter type<select class="in" data-b="equip.filter" data-t="s"><option value="sand"'+(e.filter==='sand'?' selected':'')+'>Sand filter with multiport valve</option><option value="cartridge"'+(e.filter==='cartridge'?' selected':'')+'>Cartridge filter</option></select></label><label class="f">Pump'+inp('equip.pump',e.pump,{text:1,ph:'model'})+'</label><label class="f">Salt chlorinator'+inp('equip.chlor',e.chlor,{text:1,ph:'model'})+'</label></div>'
++'<div class="card"><div class="row"><span class="b">Backup</span><span class="sm">'+(S.lastBackup?'Last backup '+dstr(S.lastBackup,{day:'numeric',month:'short'}):'No backup yet')+'</span></div><div class="row"><button class="btn grow" data-a="export">Export to a file</button><button class="btn o grow" data-a="restore">Restore</button></div><span class="sm">Saves all tests, settings and pool dimensions. Your data is stored only on this phone, so export now and then.</span><input type="file" id="rfile" accept=".json,application/json" hidden></div>'};
+
+/* ---------- render ---------- */
+const TABS=[['today','Today','drop'],['log','Log','plus'],['history','History','chart'],['pool','Pool','pool'],['rem','Reminders','bell']];
+const PARENT={settings:'today',dims:'pool',chem:'pool',equip:'pool',maint:'rem'};
+function render(){document.getElementById('app').innerHTML=(V[view]||V.today)();const cur=PARENT[view]||view;document.getElementById('tabs').innerHTML='<div>'+TABS.map(t=>'<button data-a="go" data-v="'+t[0]+'"'+(cur===t[0]?' aria-current="page"':'')+'>'+ic(t[2])+t[1]+'</button>').join('')+'</div>'}
+function go(v){view=v;render();window.scrollTo(0,0)}
+function toast(msg,canUndo){const el=document.getElementById('toast');el.innerHTML='<span>'+esc(msg)+'</span>'+(canUndo?'<button data-a="undo">Undo</button>':'');el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),canUndo?7000:3000)}
+function snap(){undoSnap=JSON.stringify(S)}
+function setPath(o,path,v){const ks=path.split('.');for(let i=0;i<ks.length-1;i++)o=o[ks[i]];o[ks[ks.length-1]]=v}
+function shareFile(name,type,text){const blob=new Blob([text],{type});try{const f=new File([blob],name,{type});if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f]}).catch(()=>{});return}}catch(e){}const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
+function buildICS(){const p=n=>String(n).padStart(2,'0'),f=t=>{const d=new Date(t);return d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'T'+p(d.getHours())+p(d.getMinutes())+'00'},stamp=f(Date.now()),ev=(sum,start,days,desc)=>['BEGIN:VEVENT','UID:'+uid()+uid()+'@mypool','DTSTAMP:'+stamp,'DTSTART:'+f(start),'DURATION:PT15M','RRULE:'+(days==='Y'?'FREQ=YEARLY':'FREQ=DAILY;INTERVAL='+Math.max(1,Math.round(days))),'SUMMARY:'+sum,'DESCRIPTION:'+desc,'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+sum,'TRIGGER:PT0M','END:VALARM','END:VEVENT'];
+let out=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//My Pool//EN'];out=out.concat(ev('Pool: test the water',Math.max(nextCheck(),Date.now()+6e4),S.rem[S.season].days||7,'Open My Pool and log chlorine and pH.'));
+const md=monthlyDue();if(md)out=out.concat(ev('Pool: monthly full test',Math.max(md.due,Date.now()+6e4),30,active('monthly').map(t=>t.name).join('\\, ')));
+for(const k of S.tasks){if(!k.on||(k.season&&k.season!==S.season))continue;const d=new Date(Math.max(taskDue(k)??Date.now(),Date.now()));d.setHours(9,0,0,0);if(d.getTime()<Date.now())d.setTime(d.getTime()+DAY);out=out.concat(ev('Pool: '+k.name.replace(/,/g,'\\,'),d.getTime(),k.days||7,'See Maintenance in My Pool for the steps.'))}
+if(S.auto.on)for(const k of['summer','winter']){const[m,d]=String(S.auto[k]).split('-').map(Number),n=new Date();let t=new Date(n.getFullYear(),m-1,d,9).getTime();if(t<Date.now())t=new Date(n.getFullYear()+1,m-1,d,9).getTime();out=out.concat(ev('Pool: '+k+' mode starts',t,'Y','My Pool switches to '+k+' mode today. Open it and add the reminders to the calendar again.'))}
+out.push('END:VCALENDAR');return out.join('\r\n')}
+
+const A={
+go:el=>{if(el.dataset.v==='log'&&view!=='log')ui.full=false;go(el.dataset.v)},
+hist:el=>{ui.hist=el.dataset.id;go('history')},
+histSel:el=>{ui.hist=el.dataset.id;render()},
+period:el=>{ui.period=+el.dataset.val;render()},
+season:el=>{S.season=el.dataset.val;S.rem.extra=null;save();render()},
+rain:()=>{S.rem.extra=tomorrowAt();save();render();toast('Extra check set for tomorrow')},
+full:()=>{ui.full=!ui.full;render()},
+swatch:el=>{draft.v[el.dataset.id]=+el.dataset.val;render()},
+addChem:()=>{if(!S.products.length){toast('Add a product in My chemicals first');return}draft.added.push({pid:(doseProd()||S.products[0]).id,amt:null});render()},
+delChem:el=>{draft.added.splice(+el.dataset.id,1);render()},
+saveLog:()=>{const v={};for(const k in draft.v)if(draft.v[k]!=null)v[k]=draft.v[k];const added=draft.added.filter(a=>a.amt!=null&&a.amt>0);if(!Object.keys(v).length&&!added.length){toast('Enter at least one reading');return}
+snap();S.logs.push({t:Date.now(),v,added,note:draft.note.trim(),season:S.season});for(const a of added){const p=S.products.find(x=>x.id===a.pid);if(p&&p.stock!=null)p.stock=Math.max(0,Math.round((p.stock-a.amt/1000)*1000)/1000)}
+S.rem.extra=added.length&&S.rem.retest?tomorrowAt():null;draft=null;ui.full=false;save();go('today');toast('Test saved',1)},
+delLog:el=>{snap();S.logs=S.logs.filter(l=>l.t!==+el.dataset.id);save();render();toast('Test deleted',1)},
+undo:()=>{if(undoSnap){S=JSON.parse(undoSnap);undoSnap=null;save();render();toast('Undone')}},
+freq:el=>{const t=S.tests[+el.dataset.id];t.freq=el.dataset.val;save();render()},
+addTest:()=>{const n=document.getElementById('nt_name').value.trim();if(!n){toast('Type a name for the test');return}const mn=num(document.getElementById('nt_min').value),mx=num(document.getElementById('nt_max').value);S.tests.push({id:'c'+uid(),name:n,unit:document.getElementById('nt_unit').value.trim(),min:mn,max:mx,lo:mn!=null?Math.min(0,mn):0,hi:mx!=null?mx*1.6:100,freq:'always',custom:true});save();render()},
+delTest:el=>{snap();S.tests.splice(+el.dataset.id,1);save();render();toast('Test removed',1)},
+addStep:()=>{S.dims.steps.push({name:'Step '+(S.dims.steps.length+1),part:true,len:null,dep:null,h:null});save();render()},
+delStep:el=>{snap();S.dims.steps.splice(+el.dataset.id,1);save();render();toast('Step removed',1)},
+autoOn:()=>{S.auto.on=!S.auto.on;S.auto.key=null;applyAuto();save();render()},
+retest:()=>{S.rem.retest=!S.rem.retest;save();render()},
+taskOn:el=>{const k=S.tasks.find(k=>k.id===el.dataset.id);k.on=!k.on;save();render()},
+openTask:el=>{ui.task=ui.task===el.dataset.id&&view==='maint'?null:el.dataset.id;go('maint')},
+doneTask:el=>{snap();const k=S.tasks.find(k=>k.id===el.dataset.id);k.last=Date.now();save();render();toast('Marked as done',1)},
+addTask:()=>{const n=document.getElementById('nk_name').value.trim(),d=num(document.getElementById('nk_days').value);if(!n||!d||d<1){toast('Type a name and how many days');return}S.tasks.push({id:'k'+uid(),name:n,days:Math.round(d),last:null,on:true,custom:true});save();render()},
+delTask:el=>{snap();S.tasks=S.tasks.filter(k=>k.id!==el.dataset.id);save();render();toast('Task deleted',1)},
+openProd:el=>{ui.prod=ui.prod===el.dataset.id?null:el.dataset.id;render()},
+addProd:()=>{const p={id:'p'+uid(),name:'New product',role:'chlorine',form:'powder',chem:'',strength:null,stock:null,full:null,low:0.5};S.products.push(p);ui.prod=p.id;save();render()},
+delProd:el=>{snap();S.products=S.products.filter(p=>p.id!==el.dataset.id);if(S.doseProduct===el.dataset.id)S.doseProduct=(S.products.find(p=>p.role==='chlorine')||{}).id||null;save();render();toast('Product deleted',1)},
+useDose:el=>{S.doseProduct=el.dataset.id;save();render()},
+addPressure:()=>{const v=num(document.getElementById('pr_new').value);if(v==null){toast('Type the gauge reading');return}snap();S.equip.pressures.push({t:Date.now(),v});if(S.equip.pressures.length>200)S.equip.pressures.shift();save();render();toast('Pressure saved',1)},
+ics:()=>{shareFile('my-pool-reminders.ics','text/calendar',buildICS())},
+export:()=>{S.lastBackup=Date.now();save();shareFile('my-pool-backup-'+new Date().toISOString().slice(0,10)+'.json','application/json',JSON.stringify(S));render()},
+restore:()=>{document.getElementById('rfile').click()}
+};
+document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(el&&A[el.dataset.a])A[el.dataset.a](el)});
+document.addEventListener('input',e=>{const el=e.target,d=el.dataset;
+if(d.d!==undefined){draft.v[d.d]=num(el.value);return}
+if(d.dm!==undefined){draft.added[+d.dm].amt=num(el.value);return}
+if(d.dn!==undefined){draft.note=el.value;return}
+if(d.b&&el.tagName==='INPUT'&&el.type!=='time'){const v=d.t==='n'?num(el.value):el.value;setPath(S,d.b,v);if(/\.stock$/.test(d.b)){const p=S.products[+d.b.split('.')[1]];p.full=Math.max(p.full||0,v||0)}save();if(d.liveSrc)document.querySelectorAll('[data-live]').forEach(n=>{n.innerHTML=LIVE[n.dataset.live]()})}});
+document.addEventListener('change',e=>{const el=e.target,d=el.dataset;
+if(d.da!==undefined){draft.added[+d.da].pid=el.value;render();return}
+if(d.au){const[k,f]=d.au.split('.');let[m,dd]=String(S.auto[k]).split('-').map(Number);if(f==='m')m=+el.value;else dd=+el.value;S.auto[k]=String(m).padStart(2,'0')+'-'+String(dd).padStart(2,'0');S.auto.key=null;applyAuto();save();render();return}
+if(d.b&&(el.tagName==='SELECT'||el.type==='time')){setPath(S,d.b,el.value);if(d.b==='surface'){const ch=test('ch');if(ch&&el.value!=='liner'&&ch.freq==='off')ch.freq='monthly'}save();render();return}
+if(el.id==='rfile'&&el.files[0]){const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!o||!Array.isArray(o.logs)||!Array.isArray(o.tests))throw 0;snap();mem=o;try{localStorage.setItem(KEY,JSON.stringify(o))}catch(x){}S=load();render();toast('Backup restored',1)}catch(x){toast('That file is not a My Pool backup')}};r.readAsText(el.files[0])}});
+{const sw=applyAuto();render();if(sw)toast('Switched to '+sw+' mode')}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){const sw=applyAuto();if(sw){render();toast('Switched to '+sw+' mode')}}});
+setTimeout(()=>document.getElementById('splash').classList.add('off'),900);
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body>
+</html>
