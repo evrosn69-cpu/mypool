@@ -114,7 +114,7 @@ const tstr=t=>new Date(t).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-d
 
 function defaults(){return{
 season:'winter',surface:'liner',
-dims:{L:null,W:null,D:null,ownVol:null,steps:[{name:'Step 1',len:null,dep:null,h:null},{name:'Step 2',len:null,dep:null,h:null},{name:'Step 3',len:null,dep:null,h:null},{name:'Small step',part:true,len:null,dep:null,h:null}]},
+dims:{u:'cm',side:'right',L:null,W:null,PD:null,wl:null,ownVol:null,steps:[{name:'Step 1',len:null,dep:null,h:null},{name:'Step 2',len:null,dep:null,h:null},{name:'Step 3',len:null,dep:null,h:null},{name:'Small step',part:true,on:'top',len:null,dep:null,h:null}]},
 tests:[
 {id:'fc',name:'Free chlorine',unit:'ppm',min:1,max:3,lo:0,hi:5,freq:'always'},
 {id:'ph',name:'pH',unit:'',min:7.2,max:7.6,lo:6.8,hi:8,freq:'always'},
@@ -144,6 +144,9 @@ lastBackup:null}}
 
 let mem=null;
 function load(){let s=null;try{s=JSON.parse(localStorage.getItem(KEY))}catch(e){}if(!s)s=mem;const d=defaults();if(!s)return d;
+if(s.dims&&s.dims.PD===undefined){const q=s.dims;q.PD=q.D??null;q.gap=null;delete q.D;const f=q.steps.filter(st=>!st.part&&st.len==null);if(f.length&&f.every(st=>st.h!=null)){const H=f.map(st=>st.h);if(H.every((h,i)=>i===H.length-1||h>=H[i+1])){for(const st of q.steps)if((st.part||st.len!=null)&&st.h!=null&&st.h>H[0])st.h-=H[0];f.forEach((st,i)=>{st.h=H[i]-(H[i+1]||0)})}}}
+
+if(s.dims&&s.dims.u!=='cm'){const q=s.dims,c=v=>v==null?null:Math.round(v*1000)/10,pd=q.PD,g=q.gap;q.L=c(q.L);q.W=c(q.W);q.PD=c(pd);q.wl=pd==null||g==null?null:(!Number.isInteger(g)&&g<pd?c(g):Math.round((pd*100-g)*10)/10);delete q.gap;q.u='cm'}
 for(const k in d){if(s[k]===undefined)s[k]=d[k];else if(d[k]&&typeof d[k]==='object'&&!Array.isArray(d[k]))for(const j in d[k])if(s[k][j]===undefined)s[k][j]=d[k][j]}return s}
 function save(){mem=S;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 let S=load(),view='today',ui={period:60,hist:'fc'},draft=null,undoSnap=null,toastT=null;
@@ -154,8 +157,14 @@ const inSeason=t=>!t.season||t.season===S.season;
 const active=f=>S.tests.filter(t=>t.freq===f&&inSeason(t));
 function latest(id){for(let i=S.logs.length-1;i>=0;i--){const v=S.logs[i].v[id];if(v!=null)return{val:v,t:S.logs[i].t}}return null}
 function status(t,v){if(v==null||t.min==null||t.max==null)return null;return v<t.min?['Low','warn']:v>t.max?['High','warn']:['OK','']}
-function stepVol(st){const d=S.dims;if(st.dep==null||st.h==null)return 0;const len=st.part?(st.len==null?null:st.len/100):(st.len!=null?st.len/100:d.W);if(len==null)return 0;return Math.min(len,d.W||len)*(st.dep/100)*Math.min(st.h/100,d.D||st.h/100)}
-function calcVolume(){const d=S.dims;if(d.L==null||d.W==null||d.D==null)return null;let v=d.L*d.W*d.D;for(const st of d.steps)v-=stepVol(st);return Math.max(0,v)}
+const wdepth=()=>{const d=S.dims;return d.PD==null?null:Math.max(0,d.wl!=null?Math.min(d.wl,d.PD):d.PD)/100};
+const fullSteps=()=>S.dims.steps.filter(st=>!st.part&&st.len==null);
+function stepTops(){const f=fullSteps(),t=[];let c=0;for(let i=f.length-1;i>=0;i--){c+=(f[i].h||0)/100;t[i]=c}return t}
+function stepVol(st){const d=S.dims,wd=wdepth();if(wd==null||st.dep==null||st.h==null)return 0;const dep=st.dep/100,f=fullSteps(),t=stepTops();
+if(!st.part&&st.len==null)return(d.W||0)/100*dep*Math.min(t[f.indexOf(st)],wd);
+if(st.len==null)return 0;const len=Math.min(st.len,d.W||st.len)/100,fl=st.on==='floor',segs=[];let c=0;f.forEach((x,i)=>{const w=(x.dep||0)/100;segs.push([c,c+w,t[i]]);c+=w});segs.push([c,Infinity,0]);
+const top=(fl?0:segs[0][2])+st.h/100;let v=0;for(const[a,b,u]of segs){const hi=Math.min(b,dep);if(hi>a)v+=Math.max(0,Math.min(top,wd)-Math.min(fl?0:u,wd))*(hi-a)}return len*v}
+function calcVolume(){const d=S.dims,wd=wdepth();if(d.L==null||d.W==null||wd==null)return null;let v=d.L/100*d.W/100*wd;for(const st of d.steps)v-=stepVol(st);return Math.max(0,Math.round(v*1000)/1000)}
 function volume(){return S.dims.ownVol!=null?S.dims.ownVol:calcVolume()}
 function nextCheck(){const r=S.rem[S.season],last=S.logs.length?S.logs[S.logs.length-1].t:null;const d=new Date(last?last+(r.days||7)*DAY:Date.now());const[h,m]=String(r.time||'10:00').split(':');d.setHours(+h||0,+m||0,0,0);let t=d.getTime();if(S.rem.extra&&S.rem.extra<t)t=S.rem.extra;return t}
 function tomorrowAt(){const d=new Date(Date.now()+DAY);const[h,m]=String(S.rem[S.season].time||'10:00').split(':');d.setHours(+h||0,+m||0,0,0);return d.getTime()}
@@ -182,18 +191,21 @@ if(pressureHigh())out.push({h:'Filter pressure is high',s:'Time to backwash the 
 if(!out.length)out.push({h:'Water is in range',s:'Nothing to add today.'});return out}
 
 /* ---------- drawings ---------- */
-function planSVG(H,labels){const W=350,d=S.dims,L=d.L||8,Wd=d.W||4,px=labels?40:14,py=labels?26:14,sc=Math.min((W-2*px)/L,(H-2*py)/Wd),pw=L*sc,ph=Wd*sc,x0=(W-pw)/2+(labels?8:0),y0=(H-ph)/2-(labels?8:0);
-let s='<svg class="pl" role="img" aria-label="Top view of the pool with its steps" viewBox="0 0 '+W+' '+H+'"><rect width="'+W+'" height="'+H+'" fill="#D5E1E6"/><rect x="'+x0+'" y="'+y0+'" width="'+pw+'" height="'+ph+'" rx="8" fill="#4FB3D9" stroke="#fff" stroke-width="5"/>';
+function planSVG(H,labels){const W=350,d=S.dims,R=d.side!=='left',L=(d.L||800)/100,Wd=(d.W||400)/100,px=labels?40:14,py=labels?26:14,sc=Math.min((W-2*px)/L,(H-2*py)/Wd),pw=L*sc,ph=Wd*sc,x0=(W-pw)/2+(labels?8:0),y0=(H-ph)/2-(labels?8:0);
+let s='<svg class="pl" role="img" aria-label="Top view of the pool with its steps" viewBox="0 0 '+W+' '+H+'"><rect width="'+W+'" height="'+H+'" fill="#D5E1E6"/><rect x="'+x0+'" y="'+y0+'" width="'+pw+'" height="'+ph+'" rx="8" fill="#4FB3D9" stroke="#fff" stroke-width="5"/>'+(R?'<g transform="translate('+(2*x0+pw)+',0) scale(-1,1)">':'<g>');
 const full=d.steps.filter(st=>!st.part&&st.len==null),cols=['#DDF2FA','#B9E3F3','#8FD0EA','#74C4E3','#62BBDE'];let cum=[],x=0;for(const st of full){x+=(st.dep?st.dep/100:L*0.07)*sc;cum.push(Math.min(x,pw*0.7))}
 for(let i=full.length-1;i>=0;i--)s+='<rect x="'+(x0+2.5)+'" y="'+(y0+2.5)+'" width="'+Math.max(0,cum[i]-2.5)+'" height="'+(ph-5)+'" rx="5" fill="'+cols[Math.min(i,4)]+'"/>';
 let yy=y0+2.5;for(const st of d.steps.filter(st=>st.part||st.len!=null)){const w=(st.dep?st.dep/100:L*0.07)*sc,h=Math.min((st.len?st.len/100:Wd*0.3)*sc,ph-5);s+='<rect x="'+(x0+3)+'" y="'+(yy+.5)+'" width="'+Math.min(w,pw*0.7)+'" height="'+h+'" rx="5" fill="#F7FCFE" stroke="#8FD0EA"/>';yy=Math.min(yy+h+2,y0+ph-10)}
 const wx=x0+Math.max(cum.length?cum[cum.length-1]:0,0)+24;if(wx+60<x0+pw)s+='<path d="M'+wx+' '+(y0+ph*0.35)+'c8-6 16-6 24 0s16 6 24 0M'+(wx+30)+' '+(y0+ph*0.7)+'c8-6 16-6 24 0s16 6 24 0" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="3" stroke-linecap="round"/>';
-if(labels){const tx='font-family="inherit" font-size="12" font-weight="600" fill="#0E2A38" text-anchor="middle"';s+='<path d="M'+x0+' '+(y0+ph+16)+'h'+pw+'M'+x0+' '+(y0+ph+10)+'v12M'+(x0+pw)+' '+(y0+ph+10)+'v12M'+(x0-16)+' '+y0+'v'+ph+'M'+(x0-22)+' '+y0+'h12M'+(x0-22)+' '+(y0+ph)+'h12" fill="none" stroke="#0E2A38" stroke-width="1.5"/><text x="'+(x0+pw/2)+'" y="'+(y0+ph+32)+'" '+tx+'>'+(d.L!=null?fmt(d.L)+' m':'length')+'</text><text x="'+(x0-24)+'" y="'+(y0+ph/2)+'" '+tx+' transform="rotate(-90 '+(x0-24)+' '+(y0+ph/2)+')">'+(d.W!=null?fmt(d.W)+' m':'width')+'</text>';if(d.D!=null)s+='<text x="'+(x0+pw-10)+'" y="'+(y0+ph-10)+'" font-size="12" font-weight="600" fill="#0E2A38" text-anchor="end">depth '+fmt(d.D)+' m</text>'}
+s+='</g>';
+if(labels){const tx='font-family="inherit" font-size="12" font-weight="600" fill="#0E2A38" text-anchor="middle"';s+='<path d="M'+x0+' '+(y0+ph+16)+'h'+pw+'M'+x0+' '+(y0+ph+10)+'v12M'+(x0+pw)+' '+(y0+ph+10)+'v12M'+(x0-16)+' '+y0+'v'+ph+'M'+(x0-22)+' '+y0+'h12M'+(x0-22)+' '+(y0+ph)+'h12" fill="none" stroke="#0E2A38" stroke-width="1.5"/><text x="'+(x0+pw/2)+'" y="'+(y0+ph+32)+'" '+tx+'>'+(d.L!=null?fmt(d.L)+' cm':'length')+'</text><text x="'+(x0-24)+'" y="'+(y0+ph/2)+'" '+tx+' transform="rotate(-90 '+(x0-24)+' '+(y0+ph/2)+')">'+(d.W!=null?fmt(d.W)+' cm':'width')+'</text>';if(wdepth()!=null)s+='<text x="'+(R?x0+10:x0+pw-10)+'" y="'+(y0+ph-10)+'" font-size="12" font-weight="600" fill="#0E2A38" text-anchor="'+(R?'start':'end')+'">water '+fmt(wdepth()*100)+' cm deep</text>'}
 return s+'</svg>'}
-function sideSVG(){const d=S.dims,L=d.L||8,D=d.D||1.5,sx=310/L,sy=72/D,fl=100,top=28,full=d.steps.filter(st=>!st.part&&st.len==null),n=full.length;let pts=[],x=20;full.forEach((st,i)=>{const h=st.h!=null?Math.min(st.h/100,D*0.97):D*(n-i)/(n+1),w=(st.dep!=null?st.dep/100:0.3)*sx;pts.push([x,fl-h*sy,x+w]);x+=w});x=Math.min(x,250);
-let p='M20 '+top+'H330V'+fl+'H'+x;for(let i=n-1;i>=0;i--)p+='V'+pts[i][1]+'H'+pts[i][0];p+='Z';let o='M20 16V';if(n){o+=pts[0][1];for(let i=0;i<n;i++)o+='H'+Math.min(pts[i][2],250)+'V'+(i<n-1?pts[i+1][1]:fl)}else o+=fl;o+='H330V16';
-let s='<svg class="pl" role="img" aria-label="Side view of the pool and its steps" viewBox="0 0 350 116"><rect width="350" height="116" fill="#D5E1E6"/><path d="'+p+'" fill="#4FB3D9"/><path d="'+o+'" fill="none" stroke="#0E2A38" stroke-width="2" stroke-linejoin="round"/><path d="M20 '+top+'H330" stroke="#fff" stroke-width="2"/>';
-s+='<path d="M306 '+(top+2)+'V'+(fl-2)+'M301 '+(top+2)+'h10M301 '+(fl-2)+'h10" fill="none" stroke="#0E2A38" stroke-width="1.5"/><text x="298" y="68" text-anchor="end" font-size="12" font-weight="600" fill="#0E2A38">'+(d.D!=null?'depth '+fmt(d.D)+' m':'water depth')+'</text>';return s+'</svg>'}
+function sideSVG(){const d=S.dims,R=d.side!=='left',L=(d.L||800)/100,PD=(d.PD||150)/100,wd=wdepth()??PD,sx=310/L,fl=100,rim=20,sy=(fl-rim)/PD,f=fullSteps(),t=stepTops(),n=f.length,known=n&&f.every(st=>st.h!=null),Y=h=>fl-Math.min(h,PD)*sy,wy=Y(wd),hs=f.map((st,i)=>known?t[i]:PD*(n-i)/(n+1)),xs=[20];let x=20;f.forEach(st=>{x+=(st.dep!=null?st.dep/100:0.3)*sx;xs.push(Math.min(x,250))});
+let p='M20 '+wy+'H330V'+fl+'H'+xs[n];for(let i=n-1;i>=0;i--)p+='V'+Math.max(Y(hs[i]),wy)+'H'+xs[i];p+='Z';
+let o='M4 '+rim+'H20V'+(n?Y(hs[0]):fl);for(let i=0;i<n;i++)o+='H'+xs[i+1]+'V'+(i<n-1?Y(hs[i+1]):fl);o+='H330V'+rim+'H346';
+let s='<svg class="pl" role="img" aria-label="Side view of the pool, its steps and the water level" viewBox="0 0 350 116"><rect width="350" height="116" fill="#D5E1E6"/><g'+(R?' transform="translate(350,0) scale(-1,1)"':'')+'><path d="'+p+'" fill="#4FB3D9"/>';
+for(const st of d.steps){if(!(st.part||st.len!=null)||st.on==='floor'||st.h==null)continue;const b=n?hs[0]:0,w=(st.dep!=null?st.dep/100:0.3)*sx;s+='<rect x="20" y="'+Y(b+st.h/100)+'" width="'+Math.min(w,230)+'" height="'+(Y(b)-Y(b+st.h/100))+'" fill="#DDF2FA" stroke="#0E2A38" stroke-width="1.5" stroke-dasharray="3 3"/>'}
+s+='<path d="'+o+'" fill="none" stroke="#0E2A38" stroke-width="2" stroke-linejoin="round"/><path d="M20 '+wy+'H330" stroke="#fff" stroke-width="2"/></g><path d="M'+(R?44:306)+' '+(wy+2)+'V'+(fl-2)+'M'+(R?39:301)+' '+(wy+2)+'h10M'+(R?39:301)+' '+(fl-2)+'h10" fill="none" stroke="#0E2A38" stroke-width="1.5"/><text x="'+(R?52:298)+'" y="'+((wy+fl)/2+4)+'" text-anchor="'+(R?'start':'end')+'" font-size="12" font-weight="600" fill="#0E2A38">'+(wdepth()!=null?'water '+fmt(wdepth()*100)+' cm':'water depth')+'</text>';return s+'</svg>'}
 function gauge(t,v){if(t.min==null||t.max==null)return'';const lo=Math.min(t.lo,v??t.lo),hi=Math.max(t.hi,v??t.hi),pc=x=>Math.max(0,Math.min(100,(x-lo)/(hi-lo)*100)),a=pc(t.min),b=pc(t.max);return'<span class="g"><i class="w" style="width:'+a+'%"></i><i class="k" style="width:'+(b-a)+'%"></i><i class="w" style="flex:1"></i>'+(v!=null?'<b style="left:'+pc(v)+'%"></b>':'')+'</span>'}
 function chartSVG(t){const now=Date.now(),from=now-ui.period*DAY,pts=S.logs.filter(l=>l.t>=from&&l.v[t.id]!=null).map(l=>[l.t,l.v[t.id]]);
 let lo=t.lo,hi=t.hi;for(const p of pts){lo=Math.min(lo,p[1]);hi=Math.max(hi,p[1])}if(t.min==null&&pts.length){lo=Math.min(...pts.map(p=>p[1]));hi=Math.max(...pts.map(p=>p[1]));if(hi===lo){hi+=1;lo-=1}}
@@ -256,18 +268,20 @@ return'<div class="row"><h1>Pool</h1><button class="btn o" data-a="go" data-v="d
 +S.tests.map((t,i)=>t.freq==='off'?'':'<span>'+esc(t.name)+(t.unit?' <span class="sm">'+esc(t.unit)+'</span>':'')+'</span>'+inp('tests.'+i+'.min',t.min,{l:t.name+' from'})+inp('tests.'+i+'.max',t.max,{l:t.name+' to'})).join('')
 +'</div><span class="sm">Common defaults. Set the salt range from your chlorinator manual.</span></div>'};
 
-V.dims=()=>{const d=S.dims;return'<div class="row" style="align-items:flex-end"><div class="col">'+back('pool','Pool')+'<h1>Dimensions</h1></div></div>'
+V.dims=()=>{const d=S.dims;return'<div class="col">'+back('pool','Pool')+'<h1>Dimensions</h1></div>'
 +'<div class="card np" data-live="side">'+sideSVG()+'</div>'
-+'<div class="card" style="flex-direction:row"><label class="f">Length, m'+inp('dims.L',d.L,{live:1})+'</label><label class="f">Width, m'+inp('dims.W',d.W,{live:1})+'</label><label class="f">Water depth, m'+inp('dims.D',d.D,{live:1})+'</label></div>'
-+'<div class="card"><div class="tbl" style="grid-template-columns:1.6fr 1fr 1fr 1fr 28px;gap:6px"><span class="b" style="font-size:13px">Steps, cm</span><span class="sm">Length</span><span class="sm">Depth</span><span class="sm">Height</span><span></span>'
-+d.steps.map((st,i)=>inp('dims.steps.'+i+'.name',st.name,{text:1,l:'Step name'}).replace('class="in','style="font-size:13px;padding:0 5px" class="in')+inp('dims.steps.'+i+'.len',st.len,{ph:st.part?'cm':'full',live:1,l:st.name+' length'})+inp('dims.steps.'+i+'.dep',st.dep,{ph:'cm',live:1,l:st.name+' depth'})+inp('dims.steps.'+i+'.h',st.h,{ph:'cm',live:1,l:st.name+' height'})+'<button class="btn x" style="min-width:28px" data-a="delStep" data-id="'+i+'" aria-label="Delete '+esc(st.name)+'">×</button>').join('')
-+'</div><span class="sm">Depth = front to back. Height = from the pool floor up to the top of the step; for a step that sits on another step, only its own height. Leave Length empty for a step across the whole width.</span></div>'
-+'<button class="btn o" data-a="addStep">Add another step or shape</button>'
-+'<div class="card" style="flex-direction:row;justify-content:space-between;align-items:center"><div class="col"><span class="sm">Water volume, worked out</span><span class="big" style="font-size:22px" data-live="vol">'+liveVol()+'</span></div><label class="f" style="flex:0 0 130px">Or my own, m³'+inp('dims.ownVol',d.ownVol,{ph:'optional',live:1})+'</label></div>'
++seg([['left','Steps on the left'],['right','Steps on the right']],d.side==='left'?'left':'right','side')
++'<div class="card"><div class="row"><label class="f">Length, cm'+inp('dims.L',d.L,{live:1})+'</label><label class="f">Width, cm'+inp('dims.W',d.W,{live:1})+'</label></div><div class="row" style="align-items:flex-end"><label class="f">Pool depth, cm (floor to top edge)'+inp('dims.PD',d.PD,{live:1})+'</label><label class="f">Water depth, cm (floor to water)'+inp('dims.wl',d.wl,{live:1,ph:'same as pool'})+'</label></div><span class="sm">All sizes on this screen are in centimetres.</span></div>'
++'<div class="card"><div class="tbl" style="grid-template-columns:1.6fr 1fr 1fr 1fr 28px;gap:6px"><span class="b" style="font-size:13px">Steps, cm</span><span class="sm">Across</span><span class="sm">Front-back</span><span class="sm">Height</span><span></span>'
++d.steps.map((st,i)=>inp('dims.steps.'+i+'.name',st.name,{text:1,l:'Step name'}).replace('class="in','style="font-size:13px;padding:0 5px" class="in')+inp('dims.steps.'+i+'.len',st.len,{ph:st.part?'cm':'full',live:1,l:st.name+' across'})+inp('dims.steps.'+i+'.dep',st.dep,{ph:'cm',live:1,l:st.name+' front to back'})+inp('dims.steps.'+i+'.h',st.h,{ph:'cm',live:1,l:st.name+' height'})+'<button class="btn x" style="min-width:28px" data-a="delStep" data-id="'+i+'" aria-label="Delete '+esc(st.name)+'">×</button>').join('')
++'</div><span class="sm">List the steps from the top one down. Height = how tall that step is by itself. Leave Across empty for a step over the whole width. The small step sits on Step 1 against the wall; shapes you add sit on the pool floor.</span></div>'
++'<button class="btn o" data-a="addStep">Add another shape</button>'
++'<div class="card" style="flex-direction:row;justify-content:space-between;align-items:center"><div class="col"><span class="sm">Water volume, worked out</span><span class="big" style="font-size:22px" data-live="vol">'+liveVol()+'</span><span class="sm" data-live="wd">'+liveWd()+'</span></div><label class="f" style="flex:0 0 130px">Or my own, m³'+inp('dims.ownVol',d.ownVol,{ph:'optional',live:1})+'</label></div>'
 +'<div class="card np" data-live="plan">'+planSVG(170,1)+'</div>'};
+const liveWd=()=>{const d=S.dims;return d.PD!=null&&d.wl!=null&&d.wl<d.PD?'Water is '+fmt(d.PD-d.wl)+' cm below the top edge':''};
 const dsel=k=>{if(!S.auto.on)return'';const[m,d]=String(S.auto[k]).split('-').map(Number),st='height:40px;font-size:14px;padding:0 2px';return'<span class="sm" style="margin-top:4px">Starts on</span><div class="row" style="justify-content:flex-start;gap:4px"><select class="in" style="width:56px;'+st+'" data-au="'+k+'.d" aria-label="'+k+' start day">'+[...Array(31)].map((_,i)=>'<option'+(i+1===d?' selected':'')+'>'+(i+1)+'</option>').join('')+'</select><select class="in" style="width:68px;'+st+'" data-au="'+k+'.m" aria-label="'+k+' start month">'+MON.map((n,i)=>'<option value="'+(i+1)+'"'+(i+1===m?' selected':'')+'>'+n+'</option>').join('')+'</select></div>'};
 const liveVol=()=>{const v=calcVolume();return v!=null?fmt(v)+' m³':'enter sizes'};
-const LIVE={vol:liveVol,side:sideSVG,plan:()=>planSVG(170,1)};
+const LIVE={wd:liveWd,vol:liveVol,side:sideSVG,plan:()=>planSVG(170,1)};
 
 V.settings=()=>'<div class="col">'+back('today','Today')+'<h1>What I test</h1></div><span class="sm">Always = in every check. Monthly = only in the full test. Off = hidden.</span>'
 +'<div class="list">'+S.tests.map((t,i)=>'<div class="row"><div class="col"><span style="font-weight:500">'+esc(t.name)+'</span>'+(t.season?'<span class="sm">'+(t.season==='summer'?'Summer only':'Winter only')+'</span>':'')+'</div><div class="row" style="gap:2px">'+seg([['always','Always'],['monthly','Monthly'],['off','Off']],t.freq,'freq','data-id="'+i+'"','s')+(t.custom?'<button class="btn x" data-a="delTest" data-id="'+i+'" aria-label="Delete '+esc(t.name)+'">×</button>':'')+'</div></div>').join('')+'</div>'
@@ -350,9 +364,10 @@ undo:()=>{if(undoSnap){S=JSON.parse(undoSnap);undoSnap=null;save();render();toas
 freq:el=>{const t=S.tests[+el.dataset.id];t.freq=el.dataset.val;save();render()},
 addTest:()=>{const n=document.getElementById('nt_name').value.trim();if(!n){toast('Type a name for the test');return}const mn=num(document.getElementById('nt_min').value),mx=num(document.getElementById('nt_max').value);S.tests.push({id:'c'+uid(),name:n,unit:document.getElementById('nt_unit').value.trim(),min:mn,max:mx,lo:mn!=null?Math.min(0,mn):0,hi:mx!=null?mx*1.6:100,freq:'always',custom:true});save();render()},
 delTest:el=>{snap();S.tests.splice(+el.dataset.id,1);save();render();toast('Test removed',1)},
-addStep:()=>{S.dims.steps.push({name:'Step '+(S.dims.steps.length+1),part:true,len:null,dep:null,h:null});save();render()},
+addStep:()=>{S.dims.steps.push({name:'Shape '+(S.dims.steps.filter(x=>x.on==='floor').length+1),part:true,on:'floor',len:null,dep:null,h:null});save();render()},
 delStep:el=>{snap();S.dims.steps.splice(+el.dataset.id,1);save();render();toast('Step removed',1)},
 autoOn:()=>{S.auto.on=!S.auto.on;S.auto.key=null;applyAuto();save();render()},
+side:el=>{S.dims.side=el.dataset.val;save();render()},
 retest:()=>{S.rem.retest=!S.rem.retest;save();render()},
 taskOn:el=>{const k=S.tasks.find(k=>k.id===el.dataset.id);k.on=!k.on;save();render()},
 openTask:el=>{ui.task=ui.task===el.dataset.id&&view==='maint'?null:el.dataset.id;go('maint')},

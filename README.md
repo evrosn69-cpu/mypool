@@ -39,7 +39,7 @@ Upload the new files to the same repository, replacing the old ones. The phone p
 - Chlorine dose: grams = (target − reading) × volume in m³ × 100 ÷ active chlorine %. The target is the middle of your range.
 - Dichlor adds about 0.9 ppm stabiliser for each 1 ppm chlorine; the app keeps an estimate from the chemicals you log and resets it whenever you log a real stabiliser test.
 - The pH minus amount is a rule of thumb only. Follow your product label.
-- Step volume = length × depth (front to back) × height. Height is from the pool floor to the top of the step; for a step that sits on another step, enter only its own height.
+- All pool sizes are entered in centimetres. Volume = length × width × water depth, minus the steps. Water depth is measured from the floor to the water surface; leave it empty if the water is at the top edge. Steps are listed from the top one down; each step's Height is how tall that step is by itself. Only the part of a step that is under water is subtracted.
 
 ## Data
 
