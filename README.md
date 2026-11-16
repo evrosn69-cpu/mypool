@@ -62,3 +62,13 @@ If two devices change something at the same moment, the later change wins.
 ## Data
 
 Stored in the browser on that phone only. Deleting the app or clearing Safari/Chrome website data deletes it, so use **Export to a file** now and then.
+
+## Push notifications (optional, free)
+
+Needs GitHub sync to be on. One-time setup:
+
+1. In your private data repository (mypool-data) create the file `.github/workflows/notify.yml` with the content of the notify.yml that came with this build.
+2. On the phone, open My Pool from the Home Screen icon, go to Reminders and tap "Turn on notifications".
+3. To test, open the Actions tab of the data repository, choose "Pool notifications" and press "Run workflow".
+
+GitHub then checks every day around 8:30 and 17:30 (Cyprus time) and sends a notification only when something is due. The app saves a list of due items inside mypool.json, and a file push.json with the phone's push address and the sending key, both in your private repository.
