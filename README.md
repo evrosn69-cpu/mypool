@@ -72,3 +72,7 @@ Needs GitHub sync to be on. One-time setup:
 3. To test, open the Actions tab of the data repository, choose "Pool notifications" and press "Run workflow".
 
 GitHub then checks every day around 8:30 and 17:30 (Cyprus time) and sends a notification only when something is due. The app saves a list of due items inside mypool.json, and a file push.json with the phone's push address and the sending key, both in your private repository.
+
+## Backwash follows the pressure
+
+The backwash task is not due by date alone. With a recent pressure reading below the limit it shows "Pressure OK". After 14 days without a pressure reading it asks you to check the gauge, after 6 weeks it asks for a backwash anyway, and at the limit it says "Backwash now". A reading well below the clean pressure shows "Low: check the baskets and the water level".
